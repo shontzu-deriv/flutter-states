@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.pink,
       ),
       home: BlocProvider(
           create: (context) => CounterCubit(),
@@ -50,11 +50,17 @@ class _MyHomePageState extends State<MyHomePage> {
       body: BlocConsumer<CounterCubit, int>(
         bloc: cubit,
         listener: (context, state) {
-          final snackbar = SnackBar(
-            content: Text('State is reached'),
+          const snackbar5 = SnackBar(
+            content: Text('positive 5'),
+          );
+          const negative = SnackBar(
+            content: Text('negative 5'),
           );
           if (state == 5) {
-            ScaffoldMessenger.of(context).showSnackBar(snackbar);
+            ScaffoldMessenger.of(context).showSnackBar(snackbar5);
+          }
+          if (state == -5) {
+            ScaffoldMessenger.of(context).showSnackBar(negative);
           }
         },
         builder: (context, state) {
@@ -69,12 +75,29 @@ class _MyHomePageState extends State<MyHomePage> {
                   '$state',
                   style: Theme.of(context).textTheme.headline4,
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    cubit.incrementCounter();
-                  },
-                  child: const Text("Increment"),
-                )
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        cubit.decrementCounter();
+                      },
+                      child: const Text("Decrement"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        cubit.resetCounter();
+                      },
+                      child: const Text("Reset"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        cubit.incrementCounter();
+                      },
+                      child: const Text("Increment"),
+                    ),
+                  ],
+                ),
               ],
             ),
           );
