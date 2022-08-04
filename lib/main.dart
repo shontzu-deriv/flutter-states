@@ -1,51 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'ResultPage.dart';
+
+import 'Result.dart';
 import 'counter_cubit.dart';
-import 'input_cubit.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    title: 'Flutter Demo',
+    theme: ThemeData(
+      primarySwatch: Colors.pink,
+    ),
+    home: BlocProvider(
+        create: (context) => CounterCubit(), child: const HomePage()),
+  ));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-      ),
-      home: BlocProvider(
-          create: (context) => CounterCubit(),
-          child: const MyHomePage(title: 'Bloc Practice')),
-      routes: {
-        '/result': (context) => const ResultPage(),
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late CounterCubit cubit;
+
+  final integerSavedController = TextEditingController();
+
+  void routingToMultiply(BuildContext context, int input, int state) {
+    //Routing to pages from multiply_and_divide.dart
+    Navigator.push(context, MaterialPageRoute(
+      builder: (BuildContext context) {
+        return MultiplyFunction(
+          input: input,
+          state: state,
+        );
       },
-    );
+    ));
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  late CounterCubit counterCubit;
-  late InputCubit inputCubit;
+  void routingToDivision(BuildContext context, int input, int state) {
+    //Routing to pages from multiply_and_divide.dart
+    Navigator.push(context, MaterialPageRoute(
+      builder: (BuildContext context) {
+        return DivideFunction(
+          input: input,
+          state: state,
+        );
+      },
+    ));
+  }
 
   @override
   void didChangeDependencies() {
-    counterCubit = BlocProvider.of<CounterCubit>(context);
-    // inputCubit = BlocProvider.of<InputCubit>(context);
+    cubit = BlocProvider.of<CounterCubit>(context);
     super.didChangeDependencies();
   }
 
@@ -53,125 +63,95 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text('Calculator'),
+        centerTitle: true,
       ),
-      body: Column(children: [
-        BlocBuilder<InputCubit, int>(builder: (context, state) {
-          return TextFormField(
-            onChanged: (String value) => inputCubit.setInputVal(value),
+      body: BlocConsumer<CounterCubit, int>(
+        bloc: cubit,
+        listener: (context, state) {
+          const snackBar = SnackBar(
+            content: Text('State is reached'),
           );
-        }),
-        BlocConsumer<CounterCubit, int>(
-          bloc: counterCubit,
-          listener: (context, state) {
-            const negative = SnackBar(
-              content: Text('negative 5'),
-            );
-            if (state == -5) {
-              ScaffoldMessenger.of(context).showSnackBar(negative);
-            }
-          },
-          builder: (context, state) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  // TextField(
-                  //   textAlign: TextAlign.center,
-                  //   decoration: const InputDecoration(
-                  //     border: OutlineInputBorder(),
-                  //     hintText: 'Enter a number',
-                  //   ),
-                  //   keyboardType: TextInputType.number,
-                  //   inputFormatters: <TextInputFormatter>[
-                  //     FilteringTextInputFormatter.digitsOnly
-                  //   ],
-                  // ),
-                  Text(
-                    "Counter: "
-                    '$state',
-                    style: Theme.of(context).textTheme.headline4,
+
+          if (state == 5) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
+        },
+        builder: (BuildContext context, state) {
+          return Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                TextField(
+                  controller: integerSavedController,
+                  keyboardType: TextInputType.numberWithOptions(),
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Enter value',
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          counterCubit.decrementCounter();
-                        },
-                        child: const Text("Decrement"),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                        width: 10,
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          counterCubit.resetCounter();
-                        },
-                        child: const Text("Reset"),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                        width: 10,
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          counterCubit.incrementCounter();
-                        },
-                        child: const Text("Increment"),
-                      ),
-                    ],
+                ),
+                Text(
+                  '$state',
+                  style: const TextStyle(
+                    fontSize: 100,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () =>
-                            {Navigator.of(context).pushNamed('/result')},
-                        child: const Text("x"),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                        width: 10,
-                      ),
-                      ElevatedButton(
-                        onPressed: () =>
-                            {Navigator.of(context).pushNamed('/result')},
-                        child: const Text("÷"),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        // BlocBuilder<InputCubit, int>(
-        //     bloc: inputCubit,
-        //     builder: (context, state) {
-        //       return Row(
-        //         mainAxisAlignment: MainAxisAlignment.center,
-        //         children: [
-        //           ElevatedButton(
-        //             onPressed: () =>
-        //                 { Navigator.of(context).pushNamed('/result')},
-        //             child: const Text("x"),
-        //           ),
-        //           const SizedBox(
-        //             height: 10,
-        //             width: 10,
-        //           ),
-        //           ElevatedButton(
-        //             onPressed: () =>
-        //                 {Navigator.of(context).pushNamed('/result')},
-        //             child: const Text("÷"),
-        //           ),
-        //         ],
-        //       );
-        //     })
-      ]),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          cubit.decrement();
+                        },
+                        child: const Icon(Icons.remove)),
+                    const SizedBox(height: 10, width: 10),
+                    ElevatedButton(
+                        onPressed: () {
+                          cubit.reset();
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                                title: const Text('You have Reset')),
+                          );
+                        },
+                        child: const Icon(Icons.refresh)),
+                    const SizedBox(height: 10, width: 10),
+                    ElevatedButton(
+                        onPressed: () {
+                          cubit.increment();
+                        },
+                        child: const Icon(Icons.add)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          int input = int.parse(integerSavedController.text);
+                          routingToMultiply(context, input, state);
+                        },
+                        child: const Icon(Icons.close)),
+                    const SizedBox(height: 10, width: 10),
+                    ElevatedButton(
+                        onPressed: () {
+                          int input = int.parse(integerSavedController.text);
+                          routingToDivision(context, input, state);
+                        },
+                        child: const Text('÷',
+                            style: TextStyle(
+                                fontSize: 30, fontWeight: FontWeight.bold))),
+                  ],
+                )
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
